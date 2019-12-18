@@ -1,16 +1,16 @@
-FROM alpine:3.8
+FROM alpine:3.10
 
 MAINTAINER NGINX Docker Maintainers "info@romanoffstudio.me"
 
-ENV NGINX_VERSION 1.13.6
+ENV TZ Europe/Kiev
+ENV NGINX_VERSION 1.17.4
 ENV LUA_MODULE_VERSION 0.10.13
 ENV DEVEL_KIT_MODULE_VERSION 0.3.0
 ENV LUAJIT_LIB=/usr/lib
 ENV LUAJIT_INC=/usr/include/luajit-2.1
-ENV NGX_BROTLI_COMMIT bfd2885b2da4d763fed18f49216bb935223cd34b
+ENV NGX_BROTLI_COMMIT e505dce68acc190cc5a1e780a3b0275e39f160ca
 # https://github.com/openresty/headers-more-nginx-module/releases
 ENV HEADERS_MORE_VERSION=0.33
-
 
 RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& CONFIG="\
@@ -63,6 +63,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	" \
 	&& addgroup -S nginx \
 	&& adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
+	&& apk add tzdata curl wget \
 	&& apk add --no-cache --virtual .build-deps \
 		gcc \
 		libc-dev \
@@ -71,7 +72,6 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		pcre-dev \
 		zlib-dev \
 		linux-headers \
-		curl \
 		gnupg \
 		libxslt-dev \
 		gd-dev \
@@ -133,6 +133,13 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& strip /usr/lib/nginx/modules/*.so \
 	&& rm -rf /usr/src/nginx-$NGINX_VERSION \
 	&& rm -rf /usr/src/ngx_brotli \
+
+    # Install mime types and other files
+    && cd /usr/src \
+    && curl -fSL https://raw.githubusercontent.com/nginx/nginx/master/conf/mime.types -o mime.types \
+    && curl -fSL https://raw.githubusercontent.com/nginx/nginx/master/conf/fastcgi_params -o fastcgi_params \
+	&& mv /usr/src/mime.types /etc/ \
+	&& mv /usr/src/fastcgi_params /etc/ \
 	\
 	# Bring in gettext so we can get `envsubst`, then throw
 	# the rest away. To do this, we need to install `gettext`
@@ -158,8 +165,7 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& ln -sf /dev/stdout /var/log/nginx/access.log \
 	&& ln -sf /dev/stderr /var/log/nginx/error.log
 
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY nginx.vh.default.conf /etc/nginx/conf.d/default.conf
+COPY conf/ /etc/nginx/
 
 EXPOSE 80 443
 
