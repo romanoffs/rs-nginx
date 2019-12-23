@@ -3,7 +3,7 @@ executors:
   docker-publisher:
     environment:
       TAG: 1.17.6
-      IMAGE_NAME: building-on-ci
+      IMAGE_NAME: romanoffs/rs-nginx
     docker:
       - image: circleci/buildpack-deps:stretch
 
