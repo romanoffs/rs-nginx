@@ -1,9 +1,9 @@
-FROM alpine:3.10
+FROM alpine:3.11
 
 MAINTAINER NGINX Docker Maintainers "info@romanoffstudio.me"
 
 ENV TZ Europe/Kiev
-ENV NGINX_VERSION 1.17.4
+ENV NGINX_VERSION 1.17.6
 ENV LUA_MODULE_VERSION 0.10.13
 ENV DEVEL_KIT_MODULE_VERSION 0.3.0
 ENV LUAJIT_LIB=/usr/lib
@@ -138,8 +138,10 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
     && cd /usr/src \
     && curl -fSL https://raw.githubusercontent.com/nginx/nginx/master/conf/mime.types -o mime.types \
     && curl -fSL https://raw.githubusercontent.com/nginx/nginx/master/conf/fastcgi_params -o fastcgi_params \
+	&& curl -fSL https://gist.githubusercontent.com/romanoffs/29b981cccff51b0ea564e258e1ed2e85/raw/17bdc5b7c940604d84a9481fe28010d7b93ab043/cloudflare.conf -o cloudflare.conf \
 	&& mv /usr/src/mime.types /etc/ \
 	&& mv /usr/src/fastcgi_params /etc/ \
+	&& mv /usr/src/cloudflare.conf /etc/ \
 	\
 	# Bring in gettext so we can get `envsubst`, then throw
 	# the rest away. To do this, we need to install `gettext`
